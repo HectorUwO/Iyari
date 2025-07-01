@@ -1,7 +1,7 @@
 # 🌟 Iyari - Tu Asistente Virtual UAN
 
 <div align="center">
-  <img src="static/img/iyari_logo.svg" alt="Iyari Logo" width="150" height="150">
+  <img src="static/img/iyari_color.png" alt="Iyari Logo" width="150" height="150">
   
   [![Flask](https://img.shields.io/badge/Flask-3.0.0-blue?style=for-the-badge&logo=flask)](https://flask.palletsprojects.com/)
   [![Python](https://img.shields.io/badge/Python-3.10+-green?style=for-the-badge&logo=python)](https://python.org)
