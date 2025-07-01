@@ -1,0 +1,150 @@
+{% extends 'layouts/main.html' %}
+
+{% block title %}Contacto - Iyari{% endblock %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/contacto.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="contact-hero">
+    <h1>
+        <span class="highlight-text">Contáctanos</span>
+    </h1>
+    <p>
+        Estamos aquí para ayudarte. Ponte en contacto con nosotros a través de cualquiera de estos medios
+        o envíanos un mensaje directamente.
+    </p>
+</div>
+
+<div class="contact-content">
+    <div class="contact-info">
+        <div class="contact-card">
+            <div class="contact-card-header">
+                <div class="contact-icon">📧</div>
+                <h3>Email</h3>
+            </div>
+            <p>Para consultas generales y soporte técnico</p>
+            <a href="mailto:iyari@uan.edu.mx" class="contact-link">iyari@uan.edu.mx</a>
+        </div>
+
+        <div class="contact-card">
+            <div class="contact-card-header">
+                <div class="contact-icon">📞</div>
+                <h3>Teléfono</h3>
+            </div>
+            <p>Atención telefónica en horario de oficina</p>
+            <a href="tel:+523111234567" class="contact-link">+52 (311) 123-4567</a>
+        </div>
+
+        <div class="contact-card">
+            <div class="contact-card-header">
+                <div class="contact-icon">💬</div>
+                <h3>Chat en Vivo</h3>
+            </div>
+            <p>Habla directamente con Iyari</p>
+            <a href="/chat" class="contact-link">Iniciar Chat →</a>
+        </div>
+
+        <div class="contact-card">
+            <div class="contact-card-header">
+                <div class="contact-icon">🏢</div>
+                <h3>Oficina</h3>
+            </div>
+            <p>Visítanos en nuestras instalaciones</p>
+            <p>
+                <strong>Dirección:</strong><br>
+                Ciudad de la Cultura "Amado Nervo"<br>
+                Tepic, Nayarit, México<br>
+                C.P. 63000
+            </p>
+
+            <div class="office-hours">
+                <h3>Horarios de Atención</h3>
+                <ul class="hours-list">
+                    <li>
+                        <span class="day">Lunes - Viernes</span>
+                        <span class="time">8:00 AM - 6:00 PM</span>
+                    </li>
+                    <li>
+                        <span class="day">Sábados</span>
+                        <span class="time">9:00 AM - 2:00 PM</span>
+                    </li>
+                    <li>
+                        <span class="day">Domingos</span>
+                        <span class="time">Cerrado</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="contact-form-container">
+        <h2>Envíanos un Mensaje</h2>
+        <form action="/contacto" method="POST">
+            <div class="form-group">
+                <label for="nombre">Nombre Completo *</label>
+                <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Tu nombre completo" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Correo Electrónico *</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="tu@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telefono">Teléfono</label>
+                <input type="tel" id="telefono" name="telefono" class="form-control" placeholder="(311) 123-4567">
+            </div>
+
+            <div class="form-group">
+                <label for="asunto">Asunto *</label>
+                <select id="asunto" name="asunto" class="form-control" required>
+                    <option value="">Selecciona un asunto</option>
+                    <option value="consulta_general">Consulta General</option>
+                    <option value="soporte_tecnico">Soporte Técnico</option>
+                    <option value="sugerencia">Sugerencia</option>
+                    <option value="reporte_error">Reporte de Error</option>
+                    <option value="otro">Otro</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="mensaje">Mensaje *</label>
+                <textarea id="mensaje" name="mensaje" class="form-control" placeholder="Escribe tu mensaje aquí..." required></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                Enviar Mensaje
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="location-section">
+    <h2>Nuestra Ubicación</h2>
+    <div class="location-card">
+        <h3>Universidad Autónoma de Nayarit</h3>
+        <p>
+            Nos encontramos en el corazón de la Universidad Autónoma de Nayarit,
+            en la Ciudad de la Cultura "Amado Nervo", Tepic, Nayarit.
+        </p>
+
+        <div class="map-placeholder">
+            🗺️ Mapa Interactivo (Próximamente)
+        </div>
+
+        <a href="https://maps.google.com/?q=Universidad+Autónoma+de+Nayarit" target="_blank" class="directions-btn">
+            Ver Direcciones en Google Maps
+        </a>
+    </div>
+</div>
+{% endblock %}
+            🗺️ Mapa Interactivo (Próximamente)
+        </div>
+
+        <a href="https://maps.google.com/?q=Universidad+Autónoma+de+Nayarit" target="_blank" class="directions-btn">
+            Ver Direcciones en Google Maps
+        </a>
+    </div>
+</div>
