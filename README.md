@@ -109,10 +109,6 @@ GET  /contacto   # Formulario de contacto
 4. 📤 Push a la rama (`git push origin feature/AmazingFeature`)
 5. 🎯 Abre un Pull Request
 
-## 📝 Licencia
-
-Este proyecto está bajo la Licencia MIT - ve el archivo `LICENSE` para más detalles.
-
 ## 🎓 Universidad Autónoma de Nayarit
 
 <div align="center">
