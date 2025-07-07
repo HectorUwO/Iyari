@@ -46,5 +46,25 @@ def not_found(error):
 def internal_error(error):
     return render_template('layouts/main.html'), 500
 
+@app.route('/api/text-to-speech', methods=['POST'])
+def text_to_speech():
+    try:
+        data = request.get_json()
+        text = data.get('text', '')
+        
+        if not text:
+            return jsonify({'status': 'error', 'message': 'No text provided'}), 400
+        
+        audio_url = url_for('static', filename='audio/placeholder.mp3')
+        
+        return jsonify({
+            'status': 'success',
+            'audioUrl': audio_url
+        })
+        
+    except Exception as e:
+        app.logger.error(f"Error in text-to-speech: {str(e)}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)

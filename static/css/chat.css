@@ -1,6 +1,6 @@
 :root {
     --primary-color: #5e50f9;
-    --primary-light: #8879ff;
+    --primary-light: #cac3fa;
     --primary-dark: #4338ca;
     --secondary-color: #f97316;
     --success-color: #10b981;
@@ -492,8 +492,8 @@ a {
     padding: 1rem 1.25rem;
 }
 
-.message.assistant .message-content {
-    background: white;
+.message.bot .message-content {
+    background: var(--primary-light);
     box-shadow: var(--shadow-sm);
     border-bottom-left-radius: 0;
 }
@@ -610,6 +610,19 @@ a {
     transform: translateY(-1px);
 }
 
+.send-button:disabled {
+    background: var(--text-muted);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.6;
+}
+
+.send-button:disabled:hover {
+    background: var(--text-muted);
+    transform: none;
+}
+
 .quick-tags {
     display: flex;
     flex-wrap: wrap;
@@ -634,6 +647,85 @@ a {
     border-color: var(--primary-color);
     transform: translateY(-1px);
     box-shadow: var(--shadow-sm);
+}
+
+.message-actions {
+    display: flex;
+    margin-top: 0.5rem;
+    gap: 0.5rem;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.message:hover .message-actions {
+    opacity: 1;
+}
+
+.message-action-btn {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.message-action-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.message-action-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.message-action-btn i {
+    font-size: 0.875rem;
+}
+
+.voice-narration-container {
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.voice-narration-btn {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.voice-narration-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.voice-narration-btn.playing {
+    background: var(--primary-color);
+    color: white;
+    animation: pulse 2s infinite;
+}
+
+.audio-player {
+    display: none;
 }
 
 @keyframes pulse {

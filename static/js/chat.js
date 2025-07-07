@@ -1,40 +1,27 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Elementos del DOM
     const chatInput = document.getElementById('chatInput');
     const sendButton = document.getElementById('sendButton');
     const chatMessages = document.getElementById('chatMessages');
-    const clearChatBtn = document.getElementById('clearChatBtn');
-    const helpBtn = document.getElementById('helpBtn');
-    const optionsBtn = document.getElementById('optionsBtn');
-    const attachBtn = document.getElementById('attachBtn');
+    const clearChatBtn = document.querySelectorAll('.delete-chat-button');
 
-    // Estado inicial
     sendButton.disabled = true;
     let conversationHistory = [];
 
-    // Inicializar chatbot
     initChat();
 
-    // Event Listeners
-    chatInput.addEventListener('input', handleInputChange);
     chatInput.addEventListener('keydown', handleKeyPress);
+    chatInput.addEventListener('input', handleInputChange);
     sendButton.addEventListener('click', sendMessage);
-    clearChatBtn.addEventListener('click', confirmClearChat);
-    helpBtn.addEventListener('click', showHelp);
-    optionsBtn.addEventListener('click', showOptions);
-    attachBtn.addEventListener('click', handleAttachment);
+    clearChatBtn.forEach(button => {
+        button.addEventListener('click', confirmClearChat);
+    });
 
-    /**
-     * Inicializa el chat
-     */
     function initChat() {
-        // Cargar historial si existe
         const savedHistory = localStorage.getItem('iyari_chat_history');
         if (savedHistory) {
             try {
-                const history = JSON.parse(savedHistory);
-                if (history.length > 0) {
-                    conversationHistory = history;
+                conversationHistory = JSON.parse(savedHistory);
+                if (conversationHistory.length > 0) {
                     renderSavedMessages();
                 }
             } catch (e) {
@@ -42,28 +29,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 localStorage.removeItem('iyari_chat_history');
             }
         }
-
-        // Focus en el input
-        setTimeout(() => {
-            chatInput.focus();
-        }, 500);
+        setTimeout(() => chatInput.focus(), 500);
     }
 
-    /**
-     * Maneja cambios en el input
-     */
     function handleInputChange() {
-        // Auto-resize
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-
-        // Habilitar/deshabilitar botón de enviar
-        sendButton.disabled = this.value.trim() === '';
+        sendButton.disabled = !chatInput.value.trim();
     }
 
-    /**
-     * Maneja pulsaciones de teclas
-     */
     function handleKeyPress(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -73,76 +45,56 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Envía un mensaje
-     */
-    function sendMessage() {
+    async function sendMessage() {
         const message = chatInput.value.trim();
-
         if (!message) return;
 
         // Añadir mensaje del usuario
         addMessage(message, 'user');
-
+        
         // Limpiar input
         chatInput.value = '';
-        chatInput.style.height = 'auto';
-        chatInput.focus();
         sendButton.disabled = true;
-
+        
         // Añadir a historial
         conversationHistory.push({
             role: 'user',
             content: message,
             timestamp: new Date().toISOString()
         });
-
-        // Guardar historial
+        
         saveHistory();
-
-        // Mostrar indicador de escritura
         showTypingIndicator();
 
-        // Aquí se conectaría con la API de backend
-        // Por ahora, simulamos una respuesta
-        simulateResponse(message);
-    }
-
-    /**
-     * Simula una respuesta del bot (para demo)
-     */
-    function simulateResponse(userMessage) {
-        // En una implementación real, aquí se enviaría la petición al backend
-
-        setTimeout(() => {
-            hideTypingIndicator();
-
-            let response;
-            if (userMessage.toLowerCase().includes('hola') || userMessage.toLowerCase().includes('saludos')) {
-                response = '¡Hola! ¿En qué puedo ayudarte hoy con información de la UAN?';
-            } else if (userMessage.toLowerCase().includes('horario')) {
-                response = 'Los horarios de atención generales de la UAN son de lunes a viernes de 8:00 am a 8:00 pm y sábados de 9:00 am a 1:00 pm. ¿Necesitas información sobre algún departamento específico?';
-            } else if (userMessage.toLowerCase().includes('inscripción') || userMessage.toLowerCase().includes('inscribir')) {
-                response = 'El proceso de inscripción requiere los siguientes documentos: certificado de estudios, CURP, identificación oficial y comprobante de pago. Las fechas de inscripción para el próximo semestre son del 15 al 30 de julio. ¿Necesitas más detalles?';
-            } else if (userMessage.toLowerCase().includes('beca')) {
-                response = 'La UAN ofrece varias becas: Beca de Excelencia Académica, Beca Socioeconómica, y Becas Deportivas. Las convocatorias se publican al inicio de cada semestre. ¿Te interesa alguna en particular?';
-            } else {
-                response = 'Gracias por tu pregunta. Para darte la información más precisa, te recomiendo visitar la sección correspondiente en el sitio web de la UAN o contactar directamente con el departamento relacionado. ¿Hay algo más en lo que pueda ayudarte?';
-            }
-
-            addMessage(response, 'bot');
-
-            // Añadir a historial
-            conversationHistory.push({
-                role: 'assistant',
-                content: response,
-                timestamp: new Date().toISOString()
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
             });
 
-            // Guardar historial
-            saveHistory();
-
-        }, Math.random() * 1000 + 1000); // Tiempo aleatorio entre 1-2 segundos
+            const data = await response.json();
+            
+            hideTypingIndicator();
+            
+            if (data.status === 'success') {
+                addMessage(data.response, 'bot');
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: data.response,
+                    timestamp: new Date().toISOString()
+                });
+                saveHistory();
+            } else {
+                addMessage('Lo siento, hubo un error. Por favor intenta de nuevo.', 'bot');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            hideTypingIndicator();
+            addMessage('Error de conexión. Por favor verifica tu conexión a internet.', 'bot');
+        }
     }
 
     /**
@@ -151,42 +103,309 @@ document.addEventListener('DOMContentLoaded', function() {
     function addMessage(text, sender) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${sender}`;
+        messageDiv.setAttribute('data-message-id', Date.now().toString());
 
         const currentTime = new Date();
         const timeStr = currentTime.getHours().toString().padStart(2, '0') + ':' +
                        currentTime.getMinutes().toString().padStart(2, '0');
 
         const avatar = sender === 'bot'
-            ? document.querySelector('.chat-avatar').innerHTML
-            :   `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
+            ? document.querySelector('.chat-avatar')?.innerHTML || '🤖'
+            : `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-fill" viewBox="0 0 16 16">
                 <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
                 </svg>`;
 
-        messageDiv.innerHTML = `
+        let messageContent = `
             <div class="message-content">
-                <div class="message-text">${formatMessageText(text)}</div>
+                <div class="message-text">${text}</div>
                 <div class="message-time flex">${timeStr} ${avatar}</div>
             </div>
         `;
 
+        // Agregar botones de acción solo para mensajes del bot
+        if (sender === 'bot') {
+            messageContent = `
+                <div class="message-content">
+                <div class="message-text">${text}</div>
+
+                <div class="message-footer flex d-flex gap-2">
+                    <div class="message-time">${timeStr} ${avatar}</div>
+                    <div class="message-actions">
+                        <button class="message-action-btn reload-btn" title="Regenerar respuesta">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button> 
+                        <button class="message-action-btn copy-btn" title="Copiar al portapapeles">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                        <button class="message-action-btn share-btn" title="Compartir">
+                            <i class="bi bi-share"></i>
+                        </button>
+                        <button class="message-action-btn like-btn" title="Me gusta">
+                            <i class="bi bi-hand-thumbs-up"></i>
+                        </button>
+                        <button class="message-action-btn dislike-btn" title="No me gusta">
+                            <i class="bi bi-hand-thumbs-down"></i>
+                        </button>
+                        <button class="voice-narration-btn" title="Escuchar respuesta">
+                            <i class="bi bi-volume-up"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="audio-player"></div>
+            </div>
+            `;
+        }
+
+        messageDiv.innerHTML = messageContent;
         chatMessages.appendChild(messageDiv);
-        scrollToBottom();
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        // Añadir event listeners para los botones solo en mensajes del bot
+        if (sender === 'bot') {
+            const messageId = messageDiv.getAttribute('data-message-id');
+            
+            // Reload button
+            messageDiv.querySelector('.reload-btn')?.addEventListener('click', () => regenerateResponse(messageId));
+            
+            // Copy button
+            messageDiv.querySelector('.copy-btn')?.addEventListener('click', () => copyToClipboard(text, messageDiv));
+            
+            // Share button
+            messageDiv.querySelector('.share-btn')?.addEventListener('click', () => shareMessage(text));
+            
+            // Like button
+            messageDiv.querySelector('.like-btn')?.addEventListener('click', (e) => {
+                rateResponse(messageId, 'like', e.currentTarget);
+                // Toggle active state
+                e.currentTarget.classList.toggle('active');
+                // Remove active from dislike if like is active
+                if (e.currentTarget.classList.contains('active')) {
+                    messageDiv.querySelector('.dislike-btn').classList.remove('active');
+                }
+            });
+            
+            // Dislike button
+            messageDiv.querySelector('.dislike-btn')?.addEventListener('click', (e) => {
+                rateResponse(messageId, 'dislike', e.currentTarget);
+                // Toggle active state
+                e.currentTarget.classList.toggle('active');
+                // Remove active from like if dislike is active
+                if (e.currentTarget.classList.contains('active')) {
+                    messageDiv.querySelector('.like-btn').classList.remove('active');
+                }
+            });
+            
+            // Voice narration button
+            messageDiv.querySelector('.voice-narration-btn')?.addEventListener('click', (e) => {
+                playVoiceNarration(text, e.currentTarget, messageDiv);
+            });
+        }
     }
 
     /**
-     * Muestra indicador de escritura
+     * Regenera la respuesta del bot para la última pregunta del usuario
      */
+    async function regenerateResponse(messageId) {
+        // Buscar el último mensaje del usuario
+        let lastUserMessage = '';
+        for (let i = conversationHistory.length - 1; i >= 0; i--) {
+            if (conversationHistory[i].role === 'user') {
+                lastUserMessage = conversationHistory[i].content;
+                break;
+            }
+        }
+
+        if (!lastUserMessage) return;
+
+        // Encontrar y eliminar el mensaje del bot que se va a regenerar
+        const messageElement = document.querySelector(`.message[data-message-id="${messageId}"]`);
+        if (messageElement) {
+            messageElement.remove();
+            
+            // Eliminar el último mensaje del bot del historial
+            for (let i = conversationHistory.length - 1; i >= 0; i--) {
+                if (conversationHistory[i].role === 'assistant') {
+                    conversationHistory.splice(i, 1);
+                    break;
+                }
+            }
+            saveHistory();
+        }
+
+        showTypingIndicator();
+
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: lastUserMessage, regenerate: true })
+            });
+
+            const data = await response.json();
+            
+            hideTypingIndicator();
+            
+            if (data.status === 'success') {
+                addMessage(data.response, 'bot');
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: data.response,
+                    timestamp: new Date().toISOString()
+                });
+                saveHistory();
+            } else {
+                addMessage('Lo siento, hubo un error al regenerar la respuesta. Por favor intenta de nuevo.', 'bot');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            hideTypingIndicator();
+            addMessage('Error de conexión. Por favor verifica tu conexión a internet.', 'bot');
+        }
+    }
+
+    /**
+     * Copia el texto al portapapeles
+     */
+    function copyToClipboard(text, messageElement) {
+        navigator.clipboard.writeText(text).then(() => {
+            // Mostrar notificación visual temporal
+            const copyBtn = messageElement.querySelector('.copy-btn');
+            const originalIcon = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="bi bi-check2"></i>';
+            copyBtn.classList.add('active');
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalIcon;
+                copyBtn.classList.remove('active');
+            }, 2000);
+        }).catch(err => {
+            console.error('Error al copiar texto: ', err);
+        });
+    }
+
+    /**
+     * Comparte el mensaje
+     */
+    function shareMessage(text) {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Conversación con Iyari',
+                text: text
+            }).catch(error => {
+                console.error('Error al compartir:', error);
+            });
+        } else {
+            // Fallback para navegadores que no soportan Web Share API
+            alert('Función de compartir no disponible en este navegador');
+        }
+    }
+
+    /**
+     * Califica la respuesta (me gusta/no me gusta)
+     */
+    function rateResponse(messageId, rating, buttonElement) {
+        // Aquí se enviaría la calificación al servidor
+        // Por ahora solo cambiamos la apariencia del botón
+        console.log(`Mensaje ${messageId} calificado como: ${rating}`);
+        
+        // Se podría implementar una llamada al API para guardar la calificación
+        /* 
+        fetch('/api/rate-response', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ messageId, rating })
+        });
+        */
+    }
+
+    /**
+     * Reproduce la narración de voz del mensaje
+     */
+    async function playVoiceNarration(text, button, messageElement) {
+        const audioContainer = messageElement.querySelector('.audio-player');
+        let audioElement = audioContainer.querySelector('audio');
+        
+        // Si ya hay un elemento de audio, lo reutilizamos
+        if (audioElement) {
+            if (!audioElement.paused) {
+                // Si está reproduciendo, pausamos
+                audioElement.pause();
+                button.classList.remove('playing');
+                button.innerHTML = '<i class="bi bi-volume-up"></i>';
+                return;
+            } else {
+                // Si está pausado, reproducimos
+                audioElement.play();
+                button.classList.add('playing');
+                button.innerHTML = '<i class="bi bi-pause-fill"></i>';
+                return;
+            }
+        }
+        
+        // Si no hay elemento de audio, lo creamos
+        button.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+        button.disabled = true;
+        
+        try {
+            const response = await fetch('/api/text-to-speech', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: text })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Error en la petición de texto a voz');
+            }
+            
+            const data = await response.json();
+            
+            // Crear el elemento de audio
+            audioElement = document.createElement('audio');
+            audioElement.src = data.audioUrl;
+            audioElement.controls = false;
+            audioContainer.appendChild(audioElement);
+            
+            // Eventos para el audio
+            audioElement.addEventListener('ended', () => {
+                button.classList.remove('playing');
+                button.innerHTML = '<i class="bi bi-volume-up"></i>';
+            });
+            
+            audioElement.addEventListener('error', () => {
+                button.classList.remove('playing');
+                button.innerHTML = '<i class="bi bi-volume-up"></i>';
+                button.disabled = false;
+                alert('Error al reproducir el audio');
+            });
+            
+            // Reproducir el audio
+            audioElement.play();
+            button.classList.add('playing');
+            button.innerHTML = '<i class="bi bi-pause-fill"></i>';
+            button.disabled = false;
+            
+        } catch (error) {
+            console.error('Error al obtener audio:', error);
+            button.innerHTML = '<i class="bi bi-volume-up"></i>';
+            button.disabled = false;
+            alert('No se pudo generar el audio en este momento');
+        }
+    }
+
     function showTypingIndicator() {
         const typingDiv = document.createElement('div');
         typingDiv.id = 'typingIndicator';
         typingDiv.className = 'message bot';
 
-        const avatar = document.querySelector('.chat-avatar').innerHTML;
+        const avatar = document.querySelector('.chat-avatar')?.innerHTML || '🤖';
 
         typingDiv.innerHTML = `
-            <div class="message-avatar">
-                ${avatar}
-            </div>
             <div class="message-content">
                 <div class="typing-indicator">
                     <div class="typing-dots">
@@ -199,12 +418,9 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         chatMessages.appendChild(typingDiv);
-        scrollToBottom();
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    /**
-     * Oculta indicador de escritura
-     */
     function hideTypingIndicator() {
         const typingIndicator = document.getElementById('typingIndicator');
         if (typingIndicator) {
@@ -212,61 +428,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function formatMessageText(text) {
-        // Convertir URLs en enlaces
-        const urlRegex = /(https?:\/\/[^\s]+)/g;
-        return text.replace(urlRegex, function(url) {
-            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-        });
-    }
-
-    /**
-     * Desplaza el chat hacia abajo
-     */
-    function scrollToBottom() {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    /**
-     * Muestra diálogo de confirmación para limpiar chat
-     */
     function confirmClearChat() {
         if (confirm('¿Estás seguro de que deseas limpiar la conversación?')) {
             clearChat();
         }
     }
 
-    /**
-     * Limpia el chat
-     */
     function clearChat() {
         // Mantener solo el mensaje de bienvenida
         const welcomeMessage = document.querySelector('.welcome-message');
         chatMessages.innerHTML = '';
-        chatMessages.appendChild(welcomeMessage);
-
+        if (welcomeMessage) {
+            chatMessages.appendChild(welcomeMessage);
+        }
         // Limpiar historial
         conversationHistory = [];
         localStorage.removeItem('iyari_chat_history');
     }
 
-    /**
-     * Guarda el historial en localStorage
-     */
     function saveHistory() {
         // Limitamos a los últimos 50 mensajes para no sobrecargar localStorage
         const historyToSave = conversationHistory.slice(-50);
         localStorage.setItem('iyari_chat_history', JSON.stringify(historyToSave));
     }
 
-    /**
-     * Renderiza mensajes guardados
-     */
     function renderSavedMessages() {
         // Ocultar mensaje de bienvenida si hay historial
-        const welcomeMessage = document.querySelector('.welcome-message');
-        if (welcomeMessage) {
-            welcomeMessage.style.display = 'none';
+        const welcomeCard = document.querySelector('.welcome-card');
+        if (welcomeCard) {
+            welcomeCard.style.display = 'none';
         }
 
         // Mostrar mensajes guardados
@@ -276,95 +466,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    /**
-     * Maneja click en botón de adjuntar
-     */
-    function handleAttachment() {
-        alert('La funcionalidad de adjuntar archivos estará disponible próximamente.');
-    }
-
-    /**
-     * Muestra opciones adicionales
-     */
-    function showOptions() {
-        const options = [
-            'Descargar conversación',
-            'Cambiar tema',
-            'Reportar un problema',
-            'Acerca de Iyari'
-        ];
-
-        const option = prompt(`Selecciona una opción:\n${options.map((opt, i) => `${i + 1}. ${opt}`).join('\n')}`);
-
-        if (option === '1') {
-            downloadConversation();
-        } else if (option) {
-            alert('Esta funcionalidad estará disponible próximamente.');
-        }
-    }
-
-    /**
-     * Descarga la conversación como texto
-     */
-    function downloadConversation() {
-        if (conversationHistory.length === 0) {
-            alert('No hay conversación para descargar.');
-            return;
-        }
-
-        let text = 'Conversación con Iyari - Asistente Virtual UAN\n';
-        text += '==================================================\n\n';
-
-        conversationHistory.forEach(msg => {
-            const role = msg.role === 'user' ? 'Tú' : 'Iyari';
-            const date = new Date(msg.timestamp);
-            const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-
-            text += `[${formattedDate}] ${role}:\n${msg.content}\n\n`;
-        });
-
-        const blob = new Blob([text], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'conversacion-iyari.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    /**
-     * Muestra ayuda
-     */
-    function showHelp() {
-        const helpMessage = `
-            <strong>¿Cómo usar Iyari?</strong><br><br>
-
-            Puedes preguntarme sobre:<br>
-            • Información académica<br>
-            • Trámites y procesos<br>
-            • Horarios y ubicaciones<br>
-            • Becas y apoyos financieros<br>
-            • Calendarios académicos<br>
-            • Programas y carreras<br><br>
-
-            <strong>Consejos:</strong><br>
-            • Sé específico en tus preguntas<br>
-            • Puedo responder mejor a una pregunta a la vez<br>
-            • Para una nueva consulta, presiona el botón de limpiar chat
-        `;
-
-        addMessage(helpMessage, 'bot');
-    }
-
-    // Exponer funciones para uso externo
-    window.selectSuggestion = function(text) {
-        chatInput.value = text;
+    // Función para seleccionar una sugerencia
+    window.selectSuggestion = function(suggestion) {
+        chatInput.value = suggestion;
         chatInput.focus();
-        chatInput.dispatchEvent(new Event('input'));
-
-        // Opcional: enviar automáticamente
-        // sendButton.click();
+        sendButton.disabled = false;
     };
 });
