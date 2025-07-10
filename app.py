@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_cors import CORS
 from api.chat import chat_bp
+from gtts import gTTS
 import os
+import uuid
+import tempfile
 
 app = Flask(__name__)
 app.secret_key = '1234567890'  
@@ -55,7 +58,20 @@ def text_to_speech():
         if not text:
             return jsonify({'status': 'error', 'message': 'No text provided'}), 400
         
-        audio_url = url_for('static', filename='audio/placeholder.mp3')
+        # Create audio directory if it doesn't exist
+        audio_dir = os.path.join(app.static_folder, 'audio')
+        os.makedirs(audio_dir, exist_ok=True)
+        
+        # Generate unique filename
+        filename = f"speech_{uuid.uuid4().hex[:8]}.mp3"
+        filepath = os.path.join(audio_dir, filename)
+        
+        # Generate speech using gTTS
+        tts = gTTS(text=text, lang='es', slow=False)
+        tts.save(filepath)
+        
+        # Generate URL for the audio file
+        audio_url = url_for('static', filename=f'audio/{filename}')
         
         return jsonify({
             'status': 'success',

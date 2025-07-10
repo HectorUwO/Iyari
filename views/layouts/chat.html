@@ -27,50 +27,13 @@
             <nav class="sidebar-nav">
                 <div class="chat-history-header">
                     <h3>Historial de chats</h3>
-                    <button class="new-chat-button" title="Nueva conversación">
+                    <button class="new-chat-button" title="Nueva conversación" id="newChatBtn">
                         <i class="bi bi-plus-lg"></i>
                     </button>
                 </div>
                 
-                <div class="chat-history-list">
-                    <div class="chat-history-item active">
-                        <div class="chat-preview">
-                            <h4>¿Cuáles son los horarios de atención?</h4>
-                            <p>Hace 5 minutos</p>
-                        </div>
-                        <button class="delete-chat-button" title="Eliminar chat">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <div class="chat-history-item">
-                        <div class="chat-preview">
-                            <h4>Información sobre becas disponibles</h4>
-                            <p>Ayer</p>
-                        </div>
-                        <button class="delete-chat-button" title="Eliminar chat">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <div class="chat-history-item">
-                        <div class="chat-preview">
-                            <h4>Proceso de inscripción UAN</h4>
-                            <p>Hace 2 días</p>
-                        </div>
-                        <button class="delete-chat-button" title="Eliminar chat">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            </svg>
-                        </button>
-                    </div>
+                <div class="chat-history-list" id="chatHistoryList">
+                    <!-- Chat history items will be loaded dynamically -->
                 </div>
             </nav>
 
@@ -193,7 +156,5 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
-</body>
-</html>
 </body>
 </html>
