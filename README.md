@@ -99,18 +99,6 @@ GET  /contacto   # Formulario de contacto
 - **Fuentes**: Nexa (ExtraLight & Heavy) ✨
 - **Iconos**: SVG optimizados 🎯
 
-## 🤝 Contribuir
-
-¡Nos encanta recibir contribuciones! Si quieres hacer Iyari aún mejor:
-
-1. 🍴 Haz fork del proyecto
-2. 🌿 Crea tu rama de feature (`git checkout -b feature/AmazingFeature`)
-3. 💾 Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. 📤 Push a la rama (`git push origin feature/AmazingFeature`)
-5. 🎯 Abre un Pull Request
-
-## 🎓 Universidad Autónoma de Nayarit
-
 <div align="center">
   <img src="static/img/uan_logo.png" alt="UAN Logo" width="100">
   
