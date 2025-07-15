@@ -4,9 +4,8 @@ import json
 
 chat_bp = Blueprint('chat_api', __name__)
 
-# Ollama API configuration
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "mistral:7b"
+# Flowise API configuration
+FLOWISE_URL = "http://localhost:3000/api/v1/prediction/98729092-b9ec-4272-b6ee-2fa016074710"
 
 @chat_bp.route('/api/chat', methods=['POST', 'OPTIONS'])
 def api_chat():
@@ -51,19 +50,8 @@ def api_chat():
         }), 500
 
 def generate_response(message, history=None, is_regenerate=False):
-    """Generate contextual response using Ollama Mistral 7B model"""
+    """Generate contextual response using Flowise API"""
     try:
-        # Create context-aware prompt for UAN assistant
-        system_prompt = """Eres Iyari, un asistente virtual de la Universidad Autónoma de Nayarit (UAN). 
-        Tu función es ayudar a estudiantes y personas interesadas con información sobre:
-        - Horarios de atención
-        - Inscripciones y requisitos
-        - Becas y apoyos financieros
-        - Carreras y programas académicos
-        - Información general de la universidad
-        
-        Responde de manera amigable, profesional y en español. Mantén las respuestas concisas pero informativas."""
-        
         # Build conversation context if history is provided
         conversation_context = ""
         if history and len(history) > 0:
@@ -74,27 +62,24 @@ def generate_response(message, history=None, is_regenerate=False):
         
         regenerate_note = "\n\nGenera una respuesta diferente y mejorada." if is_regenerate else ""
         
-        full_prompt = f"{system_prompt}{conversation_context}\n\nPregunta actual del usuario: {message}{regenerate_note}\nRespuesta:"
+        # Construct the full question with context
+        full_question = f"""{conversation_context}
         
-        # Call Ollama API
+        Pregunta actual del usuario: {message}{regenerate_note}"""
+        
+        # Call Flowise API
         response = requests.post(
-            OLLAMA_URL,
+            FLOWISE_URL,
             json={
-                "model": MODEL_NAME,
-                "prompt": full_prompt,
-                "stream": False,
-                "options": {
-                    "temperature": 0.8 if is_regenerate else 0.7,
-                    "max_tokens": 300,
-                    "top_p": 0.9
-                }
+                "question": full_question
             },
-            timeout=30
+            timeout=60
         )
         
         if response.status_code == 200:
             result = response.json()
-            return result.get('response', 'Lo siento, no pude generar una respuesta.')
+            # Flowise typically returns the response directly or in a 'text' field
+            return result.get('text', result.get('response', str(result)))
         else:
             return 'Lo siento, el servicio no está disponible en este momento.'
             

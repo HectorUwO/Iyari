@@ -698,11 +698,9 @@ document.addEventListener('DOMContentLoaded', function() {
         typingDiv.innerHTML = `
             <div class="message-content">
                 <div class="typing-indicator">
-                    <div class="typing-dots">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
                 </div>
             </div>
         `;

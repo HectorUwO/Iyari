@@ -754,7 +754,7 @@ a {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.5rem 1rem;
+    padding: 1rem 1rem;
     background: white;
     border-radius: var(--radius-lg);
     width: fit-content;
