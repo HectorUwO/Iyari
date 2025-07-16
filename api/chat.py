@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 import requests
 import json
+import re
 
 chat_bp = Blueprint('chat_api', __name__)
 
@@ -49,6 +50,29 @@ def api_chat():
             'status': 'error'
         }), 500
 
+def clean_response(response_text):
+    """Remove thinking/think sections from the response"""
+    if not response_text:
+        return response_text
+    
+    # Remove content between <thinking> and </thinking> tags
+    response_text = re.sub(r'<thinking>.*?</thinking>', '', response_text, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Remove content between <think> and </think> tags
+    response_text = re.sub(r'<think>.*?</think>', '', response_text, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Remove lines that start with "Thinking:" or "Think:"
+    response_text = re.sub(r'^(Thinking|Think):\s*.*$', '', response_text, flags=re.MULTILINE | re.IGNORECASE)
+    
+    # Remove content between thinking blocks (--- thinking --- to --- end thinking ---)
+    response_text = re.sub(r'---\s*thinking\s*---.*?---\s*end\s*thinking\s*---', '', response_text, flags=re.DOTALL | re.IGNORECASE)
+    
+    # Clean up multiple newlines and extra whitespace
+    response_text = re.sub(r'\n\s*\n', '\n\n', response_text)
+    response_text = response_text.strip()
+    
+    return response_text
+
 def generate_response(message, history=None, is_regenerate=False):
     """Generate contextual response using Flowise API"""
     try:
@@ -79,7 +103,12 @@ def generate_response(message, history=None, is_regenerate=False):
         if response.status_code == 200:
             result = response.json()
             # Flowise typically returns the response directly or in a 'text' field
-            return result.get('text', result.get('response', str(result)))
+            raw_response = result.get('text', result.get('response', str(result)))
+            
+            # Clean the response to remove thinking sections
+            cleaned_response = clean_response(raw_response)
+            
+            return cleaned_response
         else:
             return 'Lo siento, el servicio no está disponible en este momento.'
             

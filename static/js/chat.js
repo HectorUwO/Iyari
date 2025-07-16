@@ -347,6 +347,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Use saved ID if available, otherwise generate new one
         const messageId = savedMessageId || `msg_${Date.now()}_${++messageIdCounter}`;
         messageDiv.setAttribute('data-message-id', messageId);
+        
+        // Store original text for copy/share functions
+        messageDiv.setAttribute('data-original-text', text);
 
         const currentTime = new Date();
         const timeStr = formatTimestamp(currentTime);
@@ -357,8 +360,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
                 </svg>`;
 
-        // Escape HTML to prevent XSS
-        const safeText = escapeHtml(text);
+        // Render content based on sender
+        let safeText;
+        if (sender === 'bot') {
+            // Bot messages may contain markdown, so render it
+            safeText = renderMarkdown(text);
+        } else {
+            // User messages should be escaped to prevent XSS
+            safeText = escapeHtml(text);
+        }
 
         let messageContent = `
             <div class="message-content">
@@ -411,10 +421,16 @@ document.addEventListener('DOMContentLoaded', function() {
             messageDiv.querySelector('.reload-btn')?.addEventListener('click', () => regenerateResponse(messageId));
             
             // Copy button
-            messageDiv.querySelector('.copy-btn')?.addEventListener('click', () => copyToClipboard(text, messageDiv));
+            messageDiv.querySelector('.copy-btn')?.addEventListener('click', () => {
+                const originalText = messageDiv.getAttribute('data-original-text') || text;
+                copyToClipboard(originalText, messageDiv);
+            });
             
             // Share button
-            messageDiv.querySelector('.share-btn')?.addEventListener('click', () => shareMessage(text));
+            messageDiv.querySelector('.share-btn')?.addEventListener('click', () => {
+                const originalText = messageDiv.getAttribute('data-original-text') || text;
+                shareMessage(originalText);
+            });
             
             // Like button
             messageDiv.querySelector('.like-btn')?.addEventListener('click', (e) => {
@@ -436,7 +452,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Voice narration button
             messageDiv.querySelector('.voice-narration-btn')?.addEventListener('click', (e) => {
-                playVoiceNarration(text, e.currentTarget, messageDiv);
+                const originalText = messageDiv.getAttribute('data-original-text') || text;
+                playVoiceNarration(originalText, e.currentTarget, messageDiv);
             });
         }
         
@@ -454,24 +471,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            const messageContent = messageElement.querySelector('.message-text')?.textContent;
-            if (!messageContent) {
-                console.error('Message content not found');
+            // Usar el texto original guardado en el atributo data-original-text
+            const originalText = messageElement.getAttribute('data-original-text');
+            if (!originalText) {
+                console.error('Original text not found in message element');
                 return;
             }
             
-            // Encontrar el índice del mensaje del asistente en el historial
+            // Encontrar el índice del mensaje del asistente en el historial usando el texto original
             let assistantIndex = -1;
             for (let i = 0; i < conversationHistory.length; i++) {
                 if (conversationHistory[i].role === 'assistant' && 
-                    conversationHistory[i].content.trim() === messageContent.trim()) {
+                    conversationHistory[i].content.trim() === originalText.trim()) {
                     assistantIndex = i;
                     break;
                 }
             }
             
-            if (assistantIndex === -1 || assistantIndex === 0) {
-                console.error('Cannot find corresponding message in history or no user message before');
+            if (assistantIndex === -1) {
+                console.error('Cannot find corresponding message in history');
+                return;
+            }
+            
+            if (assistantIndex === 0) {
+                console.error('No user message before this assistant message');
                 return;
             }
             
@@ -496,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
             
-            // Truncar historial
+            // Truncar historial desde el mensaje del asistente
             conversationHistory = conversationHistory.slice(0, assistantIndex);
             updateCurrentChat();
             
@@ -513,6 +536,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     history: conversationHistory 
                 })
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
 
             const data = await response.json();
             hideTypingIndicator();
@@ -818,6 +845,61 @@ document.addEventListener('DOMContentLoaded', function() {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    // Function to render Markdown to HTML
+    function renderMarkdown(text) {
+        // First escape any existing HTML to prevent XSS
+        let html = escapeHtml(text);
+        
+        // Convert markdown to HTML
+        // Headers (must be at start of line)
+        html = html.replace(/^### (.*$)/gm, '<h3>$1</h3>');
+        html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
+        html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
+        
+        // Code blocks (before other formatting)
+        html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+        
+        // Bold and italic (avoid conflict with list markers)
+        html = html.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+        html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+        
+        // Links
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        
+        // Lists - handle both unordered and ordered
+        // First, mark list items
+        html = html.replace(/^(\s*)[-*+] (.*$)/gm, '$1<li>$2</li>');
+        html = html.replace(/^(\s*)\d+\. (.*$)/gm, '$1<li>$2</li>');
+        
+        // Then wrap consecutive list items in ul/ol
+        html = html.replace(/(<li>.*<\/li>(?:\s*<li>.*<\/li>)*)/gs, '<ul>$1</ul>');
+        
+        // Wrap content in paragraphs if it doesn't already have block elements
+        if (!html.includes('<h1>') && !html.includes('<h2>') && !html.includes('<h3>') && 
+            !html.includes('<ul>') && !html.includes('<pre>') && !html.includes('<p>')) {
+            html = '<p>' + html + '</p>';
+        } else if (html.includes('</p><p>')) {
+            html = '<p>' + html + '</p>';
+        }
+        
+        // Clean up empty paragraphs and fix formatting
+        html = html.replace(/<p>\s*<\/p>/g, '');
+        html = html.replace(/<p>\s*<br>\s*<\/p>/g, '');
+        html = html.replace(/<p>\s*(<h[1-3]>)/g, '$1');
+        html = html.replace(/(<\/h[1-3]>)\s*<\/p>/g, '$1');
+        html = html.replace(/<p>\s*(<ul>)/g, '$1');
+        html = html.replace(/(<\/ul>)\s*<\/p>/g, '$1');
+        html = html.replace(/<p>\s*(<pre>)/g, '$1');
+        html = html.replace(/(<\/pre>)\s*<\/p>/g, '$1');
+        
+        // Fix multiple consecutive <br> tags
+        html = html.replace(/(<br>\s*){3,}/g, '<br><br>');
+        
+        return html;
     }
 
     // Function to handle errors gracefully

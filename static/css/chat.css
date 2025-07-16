@@ -498,6 +498,96 @@ a {
     border-bottom-left-radius: 0;
 }
 
+/* Markdown styling for bot messages */
+.message.bot .message-text h1,
+.message.bot .message-text h2,
+.message.bot .message-text h3 {
+    margin: 0.5rem 0;
+    color: var(--text-primary);
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.message.bot .message-text h1 {
+    font-size: 1.5rem;
+}
+
+.message.bot .message-text h2 {
+    font-size: 1.25rem;
+}
+
+.message.bot .message-text h3 {
+    font-size: 1.125rem;
+}
+
+.message.bot .message-text p {
+    margin: 0.5rem 0;
+    line-height: 1.5;
+}
+
+.message.bot .message-text strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.message.bot .message-text em {
+    font-style: italic;
+}
+
+.message.bot .message-text code {
+    background: rgba(0, 0, 0, 0.08);
+    padding: 0.125rem 0.25rem;
+    border-radius: var(--radius-sm);
+    font-family: 'Fira Code', 'Monaco', 'Menlo', 'Consolas', monospace;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.message.bot .message-text pre {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    margin: 0.5rem 0;
+    border: 1px solid var(--border-color);
+}
+
+.message.bot .message-text pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    display: block;
+    white-space: pre;
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.message.bot .message-text ul,
+.message.bot .message-text ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.message.bot .message-text li {
+    margin: 0.25rem 0;
+    line-height: 1.5;
+}
+
+.message.bot .message-text a {
+    color: var(--primary-color);
+    text-decoration: underline;
+    transition: var(--transition);
+}
+
+.message.bot .message-text a:hover {
+    color: var(--primary-dark);
+    text-decoration: none;
+}
+
+.message.bot .message-text br {
+    line-height: 1.5;
+}
+
 .message.user .message-content {
     background: var(--primary-color);
     color: white;
