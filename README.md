@@ -56,6 +56,24 @@
 
 5. **¡Listo!** Abre tu navegador en `http://localhost:5000` 🎉
 
+
+## ▶️ Iniciar los servicios
+
+Para que Iyari funcione completamente, necesitas ejecutar dos servicios en terminales diferentes:
+
+### Terminal 1 – Iyari (Flask)
+```bash
+python app.py
+```
+
+### Terminal 2 – Flowise
+```bash
+npx flowise start
+```
+
+> 💡 **Tip**: Mantén ambas terminales abiertas mientras uses Iyari para asegurar el funcionamiento completo del sistema.
+
+
 ## 🎮 Uso
 
 ### Página Principal
