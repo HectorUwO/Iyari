@@ -56,7 +56,6 @@
 
 5. **¡Listo!** Abre tu navegador en `http://localhost:5000` 🎉
 
-
 ## ▶️ Iniciar los servicios
 
 Para que Iyari funcione completamente, necesitas ejecutar dos servicios en terminales diferentes:
@@ -73,7 +72,6 @@ npx flowise start
 
 > 💡 **Tip**: Mantén ambas terminales abiertas mientras uses Iyari para asegurar el funcionamiento completo del sistema.
 
-
 ## 🎮 Uso
 
 ### Página Principal
@@ -88,6 +86,37 @@ GET  /chat       # Interfaz de chat
 POST /api/chat   # API para mensajes
 GET  /contacto   # Formulario de contacto
 ```
+
+## 🌊 Flowise - Motor de IA
+
+**Flowise** es la plataforma que potencia la inteligencia artificial de Iyari. Es una herramienta visual de desarrollo de flujos de trabajo de IA que permite crear aplicaciones de LLM (Large Language Models) de manera intuitiva.
+
+### ¿Qué hace Flowise en Iyari?
+- 🧠 **Procesamiento de IA**: Maneja las consultas inteligentes del chatbot
+- 🔗 **Integración de APIs**: Conecta diferentes servicios de IA
+- 📊 **Gestión de Flujos**: Organiza la lógica de conversación
+- 🎯 **Optimización**: Mejora las respuestas basadas en el contexto universitario
+
+### Instalación de Flowise
+
+Si es la primera vez que usas Flowise, instálalo globalmente:
+
+```bash
+npm install -g flowise
+```
+
+### Configuración para Iyari
+
+1. **Inicia Flowise**:
+   ```bash
+   npx flowise start
+   ```
+
+2. **Accede al panel**: `http://localhost:3000`
+
+3. **Configura tu flujo**: Importa la configuración específica de Iyari para el contexto UAN
+
+> 🚀 **Pro Tip**: Flowise se ejecuta en el puerto 3000 por defecto, mientras que Iyari usa el puerto 5000. ¡Ambos puertos deben estar libres!
 
 ## 🛠️ Estructura del Proyecto
 
@@ -113,6 +142,8 @@ GET  /contacto   # Formulario de contacto
 
 - **Backend**: Flask 3.0.0 ⚡
 - **Frontend**: HTML5, CSS3, JavaScript 🌐
+- **IA Engine**: Flowise - Plataforma visual de LLM 🌊
+- **Base de Datos**: ChromaDB para embeddings 🔍
 - **Comunicación**: CORS habilitado para APIs 🔄
 - **Fuentes**: Nexa (ExtraLight & Heavy) ✨
 - **Iconos**: SVG optimizados 🎯
@@ -130,3 +161,4 @@ GET  /contacto   # Formulario de contacto
   
   **¿Tienes preguntas?** ¡Pregúntale a Iyari! 🤖
 </div>
+
